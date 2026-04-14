@@ -9,7 +9,7 @@ adminDate.value = today;
 
 function checkPin() {
     const pin = document.getElementById('pin-input').value;
-    if (pin === '1234') {
+    if (pin === '4592') {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         loadDashboardData();

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/admin.css">
 </head>
+
 <body>
-    
+
     <!-- Simple Login Screen -->
     <div id="login-screen" class="login-container">
         <div class="login-box">
@@ -17,7 +19,7 @@
             <input type="password" id="pin-input" placeholder="PIN" />
             <button onclick="checkPin()" class="btn btn-primary">Enter</button>
             <p id="login-error" style="color:red; display:none; margin-top:10px;">Incorrect PIN</p>
-            <p style="font-size: 0.8rem; margin-top:15px; color:#666;">(For demo, use PIN: 1234)</p>
+            <p style="font-size: 0.8rem; margin-top:15px; color:#666;"></p>
         </div>
     </div>
 
@@ -28,14 +30,16 @@
             <a href="index.html" class="btn btn-outline" target="_blank">View Live Site</a>
         </header>
 
-        <div class="admin-controls" style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <div class="admin-controls"
+            style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
             <label tabindex="0" for="admin-date"><strong>Manage Date:</strong></label>
-            <input type="date" id="admin-date" style="padding: 10px; margin-left: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <input type="date" id="admin-date"
+                style="padding: 10px; margin-left: 10px; border-radius: 5px; border: 1px solid #ccc;">
             <button onclick="resetDay()" class="btn btn-danger" style="float: right;">Reset This Day</button>
         </div>
 
         <main class="admin-grid">
-            
+
             <!-- Bookings List -->
             <section class="admin-card">
                 <h2>Bookings for <span id="display-date">...</span></h2>
@@ -50,7 +54,9 @@
                             </tr>
                         </thead>
                         <tbody id="bookings-body">
-                            <tr><td colspan="4">Loading...</td></tr>
+                            <tr>
+                                <td colspan="4">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -59,7 +65,8 @@
             <!-- Slots Management -->
             <section class="admin-card">
                 <h2>Manage Slots</h2>
-                <p style="margin-bottom: 15px; font-size: 0.9rem; color: #666;">Toggle slots to manually block them from users.</p>
+                <p style="margin-bottom: 15px; font-size: 0.9rem; color: #666;">Toggle slots to manually block them from
+                    users.</p>
                 <div class="table-responsive">
                     <table class="admin-table">
                         <thead>
@@ -70,7 +77,9 @@
                             </tr>
                         </thead>
                         <tbody id="slots-body">
-                            <tr><td colspan="3">Loading...</td></tr>
+                            <tr>
+                                <td colspan="3">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -81,4 +90,5 @@
 
     <script src="js/admin.js"></script>
 </body>
+
 </html>

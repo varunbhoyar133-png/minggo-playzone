@@ -210,4 +210,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Load
     loadPrice();
     loadSlots();
+
+    // Intersection Observer for Scroll Animations
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15
+    };
+
+    const scrollObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    const fadeElements = document.querySelectorAll('.fade-up, .zoom-in');
+    fadeElements.forEach(el => {
+        scrollObserver.observe(el);
+    });
 });
