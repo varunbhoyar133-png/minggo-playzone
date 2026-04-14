@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minggo Playzone | Book Your Fun Time!</title>
+    <!-- Google Fonts for Kid-friendly look -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Razorpay Checkput SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="container nav-content">
+            <a href="#home">
+                <img src="images/logo.png" alt="Minggo Playzone" class="logo-img">
+            </a>
+            <nav class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#booking">Book a Slot</a>
+                <a href="#contact">Contact</a>
+            </nav>
+            <!-- Mobile Menu Toggle -->
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Nav Overlay -->
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="#home" class="mobile-link">Home</a>
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#booking" class="mobile-link">Book a Slot</a>
+        <a href="#contact" class="mobile-link">Contact</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h2>Welcome to Minggo Wonderland! 🎈</h2>
+                <p>The safest, most colorful, and fun indoor playzone for kids. Let your little ones explore, play, and make new friends.</p>
+                <a href="#booking" class="btn btn-primary">Book Playtime Now</a>
+            </div>
+            <div class="hero-image">
+                <!-- Using a colorful placeholder graphic or CSS shapes -->
+                <div class="decorative-blob">
+                    <span class="emoji-big">🧸</span>
+                    <span class="emoji-big">🎨</span>
+                    <span class="emoji-big">🏎️</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">Why Kids Love Us 🌟</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Safe & Secure</h3>
+                    <p>Soft padding everywhere and supervised environment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧩</div>
+                    <h3>Educational Play</h3>
+                    <p>Activities designed to stimulate creativity and motor skills.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎉</div>
+                    <h3>Party Packages</h3>
+                    <p>Celebrate your kid's special day with our awesome party hostings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="booking">
+        <div class="container">
+            <h2 class="section-title">Check Availability ⏰</h2>
+            <p class="subtitle">Select a date to see available time slots below.</p>
+            
+            <div class="date-selector">
+                <label for="booking-date"><strong>Choose Date:</strong></label>
+                <input type="date" id="booking-date" class="date-input">
+            </div>
+
+            <p style="margin-top: 15px; font-weight: bold; font-family: var(--font-heading); font-size: 1.2rem; color: var(--primary);" id="pricing-info">
+                Loading pricing...
+            </p>
+
+            <div class="loading" id="slots-loading">Loading available slots...</div>
+            
+            <div class="slots-grid" id="slots-container">
+                <!-- Slots will be injected here via JS -->
+            </div>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item"><span class="color-box available"></span> Available</div>
+                <div class="legend-item"><span class="color-box booked"></span> Booked</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="booking-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-modal">&times;</button>
+            <h3>Complete Your Booking</h3>
+            <p id="selected-slot-text">Date: <span id="modal-date-text">...</span> | Time: <span id="modal-time-text">...</span></p>
+            <p id="modal-price-text" style="font-weight:bold; color: var(--success); margin-bottom: 20px;">Price: ₹0</p>
+            
+            <form id="booking-form">
+                <input type="hidden" id="booking-slot-time">
+                
+                <div class="form-group">
+                    <label for="parent-name">Parent's Name</label>
+                    <input type="text" id="parent-name" placeholder="E.g. John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="parent-phone">Phone Number</label>
+                    <input type="tel" id="parent-phone" placeholder="E.g. +1 234 567 890" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="submit-booking-btn">Pay & Book Now</button>
+            </form>
+            <div class="success-message" id="success-message">
+                ✅ Booking Confirmed! We look forward to seeing you.
+                <br><br>
+                <a href="#" id="whatsapp-share" class="btn btn-whatsapp btn-block" target="_blank" style="margin-top: 10px;">
+                    💬 Share on WhatsApp
+                </a>
+            </div>
+            <div class="error-message" id="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2 class="section-title">Explore Minggo 📸</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <div class="gallery-img-wrapper" style="background-color: var(--accent);">
+                        <span class="emoji-huge">🏰</span>
+                    </div>
+                    <div class="gallery-caption">
+                        <h3>Giant Ball Pit</h3>
+                        <p>Dive into our massive ball pit filled with thousands of colorful balls. Super safe and endless fun for toddlers!</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-img-wrapper" style="background-color: var(--success);">
+                        <span class="emoji-huge">🧗‍♀️</span>
+                    </div>
+                    <div class="gallery-caption">
+                        <h3>Soft Climbing Wall</h3>
+                        <p>Padded climbing structures to help kids build strength and confidence in a completely secure environment.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-img-wrapper" style="background-color: var(--primary);">
+                        <span class="emoji-huge">🏎️</span>
+                    </div>
+                    <div class="gallery-caption">
+                        <h3>Mini Racing Track</h3>
+                        <p>Let your little racers zoom around safely on our soft track with push-cars and tricycles.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-img-wrapper" style="background-color: var(--secondary);">
+                        <span class="emoji-huge">🎨</span>
+                    </div>
+                    <div class="gallery-caption">
+                        <h3>Creative Corner</h3>
+                        <p>A quiet zone equipped with building blocks, drawing boards, and puzzles to stimulate their imagination.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Happy Parents 🥰</h2>
+            <div class="testies-cards">
+                <div class="testy-card">
+                    <p>"My kids never want to leave! It's incredibly clean and the staff is amazing."</p>
+                    <strong>- Sarah P.</strong>
+                </div>
+                <div class="testy-card">
+                    <p>"The best place for weekend fun. The booking system makes it so easy!"</p>
+                    <strong>- Mike R.</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact & Footer -->
+    <footer id="contact" class="footer">
+        <div class="container footer-content">
+            <div class="footer-info">
+                <img src="images/logo.png" alt="Minggo Playzone" class="logo-img" style="margin-bottom: 15px; filter: brightness(0) invert(1);">
+                <p>📍 123 Fun Street, Playground City</p>
+                <p>📞 +1 800-PLAY-NOW</p>
+            </div>
+            <div class="footer-cta">
+                <p>Have questions?</p>
+                <a href="https://wa.me/1234567890?text=Hi%20Minggo%20Playzone,%20I%20have%20an%20inquiry!" class="btn btn-whatsapp" target="_blank">
+                    💬 Chat on WhatsApp
+                </a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2026 Minggo Playzone. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script src="js/app.js"></script>
+</body>
+</html>
