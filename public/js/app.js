@@ -77,13 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             slots.forEach(slot => {
                 const slotEl = document.createElement('div');
-                slotEl.className = `slot-card ${slot.is_available ? '' : 'booked'}`;
+                slotEl.className = 'slot-card';
                 slotEl.textContent = slot.time;
-                
-                if (slot.is_available) {
-                    slotEl.addEventListener('click', () => openBookingModal(slot));
-                }
-
+                slotEl.addEventListener('click', () => openBookingModal(slot));
                 slotsContainer.appendChild(slotEl);
             });
         } catch (error) {

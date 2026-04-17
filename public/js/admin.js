@@ -136,3 +136,10 @@ async function resetDay() {
         alert('Error resetting day');
     }
 }
+
+// 5. Export Bookings CSV
+function exportBookingsCsv() {
+    const date = adminDate.value || today;
+    const downloadUrl = `${API_URL}/admin/bookings/export?date=${encodeURIComponent(date)}`;
+    window.open(downloadUrl, '_blank');
+}

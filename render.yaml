@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: minggo-playzone
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/database.sqlite
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+    disk:
+      name: minggo-data
+      mountPath: /var/data
+      sizeGB: 1
