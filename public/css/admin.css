@@ -98,3 +98,13 @@ body {
 .status-unavail { background: #F8D7DA; color: #721C24; }
 
 .actions-cell { display: flex; gap: 5px; }
+
+.alert-new-booking {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #E8FFF7;
+    color: #0C6B4B;
+    border: 1px solid #A4EED6;
+    font-weight: 700;
+}

@@ -35,9 +35,24 @@
             <label tabindex="0" for="admin-date"><strong>Manage Date:</strong></label>
             <input type="date" id="admin-date"
                 style="padding: 10px; margin-left: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <label for="show-all-bookings" style="margin-left: 12px;">
+                <input type="checkbox" id="show-all-bookings">
+                Show all bookings
+            </label>
             <button onclick="exportBookingsCsv()" class="btn btn-outline" style="float: right; margin-left: 10px;">Export CSV</button>
             <button onclick="resetDay()" class="btn btn-danger" style="float: right;">Reset This Day</button>
         </div>
+        <div class="admin-controls"
+            style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <strong>Booking Window:</strong>
+            <label for="advance-booking-days" style="margin-left: 8px;">Allow booking for next</label>
+            <input type="number" id="advance-booking-days" min="1" max="60"
+                style="padding: 8px; margin-left: 8px; width: 90px; border-radius: 5px; border: 1px solid #ccc;">
+            <span>day(s)</span>
+            <button id="save-booking-window-btn" class="btn btn-primary" style="margin-left: 10px;">Save</button>
+            <span id="booking-window-message" style="margin-left: 10px; color: #555;"></span>
+        </div>
+        <div id="new-booking-alert" class="alert-new-booking" style="display: none;"></div>
 
         <main class="admin-grid">
 

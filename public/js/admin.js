@@ -2,6 +2,12 @@
 const API_URL = '/api';
 const adminDate = document.getElementById('admin-date');
 const displayDate = document.getElementById('display-date');
+const showAllBookingsCheckbox = document.getElementById('show-all-bookings');
+const advanceBookingDaysInput = document.getElementById('advance-booking-days');
+const saveBookingWindowBtn = document.getElementById('save-booking-window-btn');
+const bookingWindowMessage = document.getElementById('booking-window-message');
+const newBookingAlert = document.getElementById('new-booking-alert');
+let latestSeenBookingTimestamp = null;
 
 // Default to today
 const today = new Date().toISOString().split('T')[0];
@@ -21,12 +27,16 @@ function checkPin() {
 adminDate.addEventListener('change', () => {
     loadDashboardData();
 });
+showAllBookingsCheckbox.addEventListener('change', () => {
+    loadBookings();
+});
 
 // --- DASHBOARD LOGIC ---
 
 async function loadDashboardData() {
-    displayDate.textContent = adminDate.value || today;
-    loadBookings();
+    displayDate.textContent = showAllBookingsCheckbox.checked ? 'All dates' : (adminDate.value || today);
+    const bookings = await loadBookings();
+    notifyForNewBookings(bookings);
     loadSlots();
 }
 
@@ -35,13 +45,16 @@ async function loadBookings() {
     const tbody = document.getElementById('bookings-body');
     const date = adminDate.value || today;
     try {
-        const response = await fetch(`${API_URL}/admin/bookings?date=${date}`);
+        const bookingsUrl = showAllBookingsCheckbox.checked
+            ? `${API_URL}/admin/bookings?all=1`
+            : `${API_URL}/admin/bookings?date=${date}`;
+        const response = await fetch(bookingsUrl);
         const bookings = await response.json();
         
         tbody.innerHTML = '';
         if (bookings.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5">No bookings found for this date.</td></tr>';
-            return;
+            return [];
         }
 
         bookings.forEach(b => {
@@ -63,8 +76,10 @@ async function loadBookings() {
             }
             tbody.appendChild(tr);
         });
+        return bookings;
     } catch (error) {
         tbody.innerHTML = '<tr><td colspan="5">Error loading bookings.</td></tr>';
+        return [];
     }
 }
 
@@ -141,6 +156,86 @@ async function resetDay() {
 // 5. Export Bookings CSV
 function exportBookingsCsv() {
     const date = adminDate.value || today;
-    const downloadUrl = `${API_URL}/admin/bookings/export?date=${encodeURIComponent(date)}`;
+    const downloadUrl = showAllBookingsCheckbox.checked
+        ? `${API_URL}/admin/bookings/export?all=1`
+        : `${API_URL}/admin/bookings/export?date=${encodeURIComponent(date)}`;
     window.open(downloadUrl, '_blank');
 }
+
+function notifyForNewBookings(bookings) {
+    const validBookings = bookings.filter((b) => b.status !== 'BLOCKED' && b.created_at);
+    if (validBookings.length === 0) {
+        newBookingAlert.style.display = 'none';
+        return;
+    }
+
+    const latestBooking = validBookings.reduce((latest, current) => {
+        return current.created_at > latest.created_at ? current : latest;
+    });
+
+    if (!latestSeenBookingTimestamp) {
+        latestSeenBookingTimestamp = latestBooking.created_at;
+        newBookingAlert.style.display = 'none';
+        return;
+    }
+
+    if (latestBooking.created_at > latestSeenBookingTimestamp) {
+        latestSeenBookingTimestamp = latestBooking.created_at;
+        newBookingAlert.textContent = `New booking: ${latestBooking.name} (${latestBooking.children_count || 1} child) at ${latestBooking.time} on ${latestBooking.date}`;
+        newBookingAlert.style.display = 'block';
+        setTimeout(() => {
+            newBookingAlert.style.display = 'none';
+        }, 8000);
+        return;
+    }
+
+    newBookingAlert.style.display = 'none';
+}
+
+async function loadBookingWindowSettings() {
+    try {
+        const response = await fetch(`${API_URL}/admin/settings`);
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load booking window settings.');
+        }
+        advanceBookingDaysInput.value = data.advance_booking_days;
+    } catch (error) {
+        bookingWindowMessage.textContent = error.message;
+    }
+}
+
+async function saveBookingWindowSettings() {
+    bookingWindowMessage.textContent = '';
+    const parsedDays = Number.parseInt(advanceBookingDaysInput.value, 10);
+    if (Number.isNaN(parsedDays) || parsedDays < 1 || parsedDays > 60) {
+        bookingWindowMessage.textContent = 'Enter a value between 1 and 60.';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/admin/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ advance_booking_days: parsedDays })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to save booking window settings.');
+        }
+        bookingWindowMessage.textContent = `Saved: next ${data.advance_booking_days} day(s).`;
+    } catch (error) {
+        bookingWindowMessage.textContent = error.message;
+    }
+}
+
+saveBookingWindowBtn.addEventListener('click', saveBookingWindowSettings);
+
+setInterval(() => {
+    const dashboardVisible = document.getElementById('dashboard').style.display === 'block';
+    if (dashboardVisible) {
+        loadDashboardData();
+    }
+}, 15000);
+
+loadBookingWindowSettings();

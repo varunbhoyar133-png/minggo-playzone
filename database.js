@@ -35,6 +35,23 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 }
             }
         );
+
+        db.run(`CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )`, (settingsErr) => {
+            if (settingsErr) {
+                console.error("Error creating settings table", settingsErr);
+                return;
+            }
+
+            db.run(
+                "INSERT INTO settings (key, value) VALUES ('advance_booking_days', '14') ON CONFLICT(key) DO NOTHING",
+                (seedErr) => {
+                    if (seedErr) console.error("Error seeding settings table", seedErr);
+                }
+            );
+        });
     }
 });
 

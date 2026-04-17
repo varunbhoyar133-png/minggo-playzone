@@ -27,11 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const API_URL = '/api';
     let currentPrice = 0;
+    let maxAdvanceBookingDays = 14;
 
     // Set Default Date to Today
     const today = new Date().toISOString().split('T')[0];
     dateInput.value = today;
     dateInput.min = today; // restrict past dates
+
+    function formatDate(dateObj) {
+        return dateObj.toISOString().split('T')[0];
+    }
+
+    function applyDateLimits() {
+        const todayDate = new Date();
+        const maxDate = new Date();
+        maxDate.setDate(todayDate.getDate() + maxAdvanceBookingDays);
+        dateInput.min = formatDate(todayDate);
+        dateInput.max = formatDate(maxDate);
+    }
 
     // Toggle Mobile Nav
     hamburger.addEventListener('click', () => {
@@ -48,6 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPrice();
         loadSlots();
     });
+
+    async function loadBookingSettings() {
+        try {
+            const res = await fetch(`${API_URL}/settings`);
+            const data = await res.json();
+            if (res.ok && Number.isInteger(data.advance_booking_days)) {
+                maxAdvanceBookingDays = data.advance_booking_days;
+            }
+        } catch (e) {
+            // Keep default value if settings API fails.
+        } finally {
+            applyDateLimits();
+        }
+    }
 
     async function loadPrice() {
         try {
@@ -78,6 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const date = dateInput.value || today;
             const response = await fetch(`${API_URL}/slots?date=${date}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to load slots');
+            }
             const slots = await response.json();
             
             slotsLoading.style.display = 'none';
@@ -90,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 slotsContainer.appendChild(slotEl);
             });
         } catch (error) {
-            slotsLoading.textContent = 'Error loading slots. Please try again later.';
+            slotsLoading.textContent = error.message || 'Error loading slots. Please try again later.';
             console.error('Error fetching slots:', error);
         }
     }
@@ -226,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial Load
+    loadBookingSettings();
     loadPrice();
     loadSlots();
 
