@@ -119,15 +119,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const parentName = document.getElementById('parent-name').value;
         const parentPhone = document.getElementById('parent-phone').value;
+        const childrenCount = Number.parseInt(document.getElementById('children-count').value, 10);
         const date = dateInput.value || today;
         const time = slotTimeInput.value;
+
+        if (Number.isNaN(childrenCount) || childrenCount < 1 || childrenCount > 20) {
+            showError('Please enter children count between 1 and 20.');
+            return;
+        }
 
         try {
             // 1. Create Order
             const orderRes = await fetch(`${API_URL}/book/order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ date, time, name: parentName, phone: parentPhone })
+                body: JSON.stringify({
+                    date,
+                    time,
+                    name: parentName,
+                    phone: parentPhone,
+                    children_count: childrenCount
+                })
             });
 
             const orderData = await orderRes.json();
@@ -168,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             successMsg.style.display = 'block';
                             
                             // Prep WhatsApp Share
-                            const msg = `Hi Minggo Playzone! 🎉\nI just booked a slot.\n\n*Name:* ${parentName}\n*Date:* ${date}\n*Time:* ${time}\n\nCan't wait!`;
+                            const msg = `Hi Minggo Playzone! 🎉\nI just booked a slot.\n\n*Name:* ${parentName}\n*Date:* ${date}\n*Time:* ${time}\n*Children:* ${childrenCount}\n\nCan't wait!`;
                             whatsappShareBtn.href = `https://wa.me/1234567890?text=${encodeURIComponent(msg)}`;
 
                             loadSlots(); // Refresh UI

@@ -40,7 +40,7 @@ async function loadBookings() {
         
         tbody.innerHTML = '';
         if (bookings.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4">No bookings found for this date.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">No bookings found for this date.</td></tr>';
             return;
         }
 
@@ -48,7 +48,7 @@ async function loadBookings() {
             const tr = document.createElement('tr');
             if (b.status === 'BLOCKED') {
                 tr.innerHTML = `
-                    <td colspan="4" style="color: #EF476F; font-weight: bold; text-align: center;">
+                    <td colspan="5" style="color: #EF476F; font-weight: bold; text-align: center;">
                         [BLOCKED] Slot at ${b.time}
                     </td>
                 `;
@@ -56,6 +56,7 @@ async function loadBookings() {
                 tr.innerHTML = `
                     <td><strong>${b.name}</strong></td>
                     <td>${b.phone}</td>
+                    <td>${b.children_count || 1}</td>
                     <td>${b.time}</td>
                     <td>₹${b.amount}</td>
                 `;
@@ -63,7 +64,7 @@ async function loadBookings() {
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="4">Error loading bookings.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">Error loading bookings.</td></tr>';
     }
 }
 

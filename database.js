@@ -16,6 +16,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             time TEXT,
             name TEXT,
             phone TEXT,
+            children_count INTEGER DEFAULT 1,
             amount INTEGER,
             order_id TEXT,
             payment_id TEXT,
@@ -25,6 +26,15 @@ const db = new sqlite3.Database(dbPath, (err) => {
         )`, (err) => {
             if (err) console.error("Error creating bookings table", err);
         });
+
+        db.run(
+            "ALTER TABLE bookings ADD COLUMN children_count INTEGER DEFAULT 1",
+            (alterErr) => {
+                if (alterErr && !alterErr.message.includes("duplicate column name")) {
+                    console.error("Error adding children_count column", alterErr);
+                }
+            }
+        );
     }
 });
 

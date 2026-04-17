@@ -69,10 +69,14 @@ app.get('/api/slots', (req, res) => {
 
 // Create Razorpay order
 app.post('/api/book/order', async (req, res) => {
-    const { date, time, name, phone } = req.body;
+    const { date, time, name, phone, children_count } = req.body;
+    const parsedChildrenCount = Number.parseInt(children_count, 10);
 
-    if (!date || !time || !name || !phone) {
+    if (!date || !time || !name || !phone || Number.isNaN(parsedChildrenCount)) {
         return res.status(400).json({ error: "Missing fields" });
+    }
+    if (parsedChildrenCount < 1 || parsedChildrenCount > 20) {
+        return res.status(400).json({ error: "Children count must be between 1 and 20." });
     }
 
     if (!hasRazorpayConfig || !razorpay) {
@@ -96,8 +100,8 @@ app.post('/api/book/order', async (req, res) => {
                 if (err) return res.status(500).json({ error: err.message });
 
                 db.run(
-                    "INSERT INTO bookings (date, time, name, phone, amount, order_id, status) VALUES (?, ?, ?, ?, ?, ?, 'PENDING')",
-                    [date, time, name, phone, amountINR, order.id],
+                    "INSERT INTO bookings (date, time, name, phone, children_count, amount, order_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING')",
+                    [date, time, name, phone, parsedChildrenCount, amountINR, order.id],
                     function (err) {
                         if (err) return res.status(500).json({ error: err.message });
 
@@ -106,7 +110,8 @@ app.post('/api/book/order', async (req, res) => {
                             amount: amountINR,
                             key_id: RAZORPAY_KEY_ID,
                             name,
-                            phone
+                            phone,
+                            children_count: parsedChildrenCount
                         });
                     }
                 );
@@ -186,11 +191,11 @@ app.get('/api/admin/bookings', (req, res) => {
 app.get('/api/admin/bookings/export', (req, res) => {
     const date = req.query.date;
 
-    let query = "SELECT date, time, name, phone, amount, status, order_id, payment_id, created_at FROM bookings ORDER BY date DESC, time ASC";
+    let query = "SELECT date, time, name, phone, children_count, amount, status, order_id, payment_id, created_at FROM bookings ORDER BY date DESC, time ASC";
     let params = [];
 
     if (date) {
-        query = "SELECT date, time, name, phone, amount, status, order_id, payment_id, created_at FROM bookings WHERE date=? ORDER BY time ASC";
+        query = "SELECT date, time, name, phone, children_count, amount, status, order_id, payment_id, created_at FROM bookings WHERE date=? ORDER BY time ASC";
         params = [date];
     }
 
@@ -206,7 +211,7 @@ app.get('/api/admin/bookings/export', (req, res) => {
             return str;
         };
 
-        const headers = ["date", "time", "name", "phone", "amount", "status", "order_id", "payment_id", "created_at"];
+        const headers = ["date", "time", "name", "phone", "children_count", "amount", "status", "order_id", "payment_id", "created_at"];
         const lines = [
             headers.join(","),
             ...rows.map((row) => headers.map((key) => escapeCsv(row[key])).join(","))
