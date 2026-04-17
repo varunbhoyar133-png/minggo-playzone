@@ -1,3 +1,13 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
+require('dotenv').config();
+
+const db = require('./database');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 /* =========================
    🔐 RAZORPAY SETUP
