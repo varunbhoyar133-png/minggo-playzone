@@ -182,6 +182,44 @@ app.get('/api/admin/bookings', (req, res) => {
     });
 });
 
+// Export bookings CSV
+app.get('/api/admin/bookings/export', (req, res) => {
+    const date = req.query.date;
+
+    let query = "SELECT date, time, name, phone, amount, status, order_id, payment_id, created_at FROM bookings ORDER BY date DESC, time ASC";
+    let params = [];
+
+    if (date) {
+        query = "SELECT date, time, name, phone, amount, status, order_id, payment_id, created_at FROM bookings WHERE date=? ORDER BY time ASC";
+        params = [date];
+    }
+
+    db.all(query, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const escapeCsv = (value) => {
+            if (value === null || value === undefined) return "";
+            const str = String(value);
+            if (str.includes('"') || str.includes(",") || str.includes("\n")) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+
+        const headers = ["date", "time", "name", "phone", "amount", "status", "order_id", "payment_id", "created_at"];
+        const lines = [
+            headers.join(","),
+            ...rows.map((row) => headers.map((key) => escapeCsv(row[key])).join(","))
+        ];
+        const csvContent = lines.join("\n");
+        const safeDate = date || "all";
+
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="bookings-${safeDate}.csv"`);
+        return res.status(200).send(csvContent);
+    });
+});
+
 // Reset day
 app.post('/api/admin/reset', (req, res) => {
     const { date } = req.body;
