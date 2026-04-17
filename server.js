@@ -83,7 +83,8 @@ app.post('/api/book/order', async (req, res) => {
         return res.status(500).json({ error: "Payment is not configured on server." });
     }
 
-    const amountINR = calculatePrice(date);
+    const pricePerChildINR = calculatePrice(date);
+    const amountINR = pricePerChildINR * parsedChildrenCount;
 
     try {
         const order = await razorpay.orders.create({
@@ -108,6 +109,7 @@ app.post('/api/book/order', async (req, res) => {
                         res.json({
                             order_id: order.id,
                             amount: amountINR,
+                            price_per_child: pricePerChildINR,
                             key_id: RAZORPAY_KEY_ID,
                             name,
                             phone,

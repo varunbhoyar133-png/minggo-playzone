@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTimeText = document.getElementById('modal-time-text');
     const modalPriceText = document.getElementById('modal-price-text');
     const slotTimeInput = document.getElementById('booking-slot-time');
+    const childrenCountInput = document.getElementById('children-count');
     
     const submitBtn = document.getElementById('submit-booking-btn');
     const successMsg = document.getElementById('success-message');
@@ -56,10 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPrice = data.price;
             
             const isWeekend = currentPrice === 300;
-            pricingInfo.textContent = `Current Price: ₹${currentPrice} per hour (${isWeekend ? 'Weekend' : 'Weekday'})`;
+            pricingInfo.textContent = `Current Price: ₹${currentPrice} per child (${isWeekend ? 'Weekend' : 'Weekday'})`;
         } catch(e) {
             pricingInfo.textContent = 'Failed to load pricing.';
         }
+    }
+
+    function updateModalTotal() {
+        const childrenCount = Number.parseInt(childrenCountInput.value, 10) || 1;
+        const totalAmount = currentPrice * childrenCount;
+        modalPriceText.textContent = `Total: ₹${totalAmount}.00`;
     }
 
     // Fetch and render slots
@@ -92,10 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function openBookingModal(slot) {
         modalDateText.textContent = dateInput.value || today;
         modalTimeText.textContent = slot.time;
-        modalPriceText.textContent = `Total: ₹${currentPrice}.00`;
         slotTimeInput.value = slot.time;
         
         bookingForm.reset();
+        childrenCountInput.value = 1;
+        updateModalTotal();
         bookingForm.style.display = 'block';
         successMsg.style.display = 'none';
         errorMsg.style.display = 'none';
@@ -108,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal.addEventListener('click', () => {
         modal.classList.remove('active');
     });
+    childrenCountInput.addEventListener('input', updateModalTotal);
 
     // Handle Form Submit & Razorpay
     bookingForm.addEventListener('submit', async (e) => {
@@ -125,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (Number.isNaN(childrenCount) || childrenCount < 1 || childrenCount > 20) {
             showError('Please enter children count between 1 and 20.');
+            submitBtn.disabled = false;
             return;
         }
 
