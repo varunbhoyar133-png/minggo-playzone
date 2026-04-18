@@ -7,28 +7,92 @@ const advanceBookingDaysInput = document.getElementById('advance-booking-days');
 const saveBookingWindowBtn = document.getElementById('save-booking-window-btn');
 const bookingWindowMessage = document.getElementById('booking-window-message');
 const newBookingAlert = document.getElementById('new-booking-alert');
+const loginError = document.getElementById('login-error');
+const logoutBtn = document.getElementById('logout-btn');
 let latestSeenBookingTimestamp = null;
 
 // Default to today
 const today = new Date().toISOString().split('T')[0];
 adminDate.value = today;
+showAllBookingsCheckbox.checked = true; // Default to showing all bookings
 
 function checkPin() {
-    const pin = document.getElementById('pin-input').value;
-    if (pin === '4592') {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        loadDashboardData();
-    } else {
-        document.getElementById('login-error').style.display = 'block';
+    const password = document.getElementById('pin-input').value;
+    if (!password) {
+        loginError.textContent = 'Enter password';
+        loginError.style.display = 'block';
+        return;
+    }
+
+    fetch(`${API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+    })
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                loginError.textContent = data.error || 'Login failed';
+                loginError.style.display = 'block';
+                return;
+            }
+            loginError.style.display = 'none';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadDashboardData();
+            loadBookingWindowSettings();
+        })
+        .catch(() => {
+            loginError.textContent = 'Login failed';
+            loginError.style.display = 'block';
+        });
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        loginError.textContent = 'Please login again';
+        loginError.style.display = 'block';
+        throw new Error('Unauthorized');
+    }
+    return response;
+}
+
+async function checkAdminSessionOnLoad() {
+    try {
+        const response = await apiFetch(`${API_URL}/admin/me`);
+        const data = await response.json();
+        if (response.ok && data.authenticated) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadDashboardData();
+            loadBookingWindowSettings();
+        } else {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+    } catch (e) {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
     }
 }
 
+document.getElementById('pin-input').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        checkPin();
+    }
+});
+
 adminDate.addEventListener('change', () => {
+    showAllBookingsCheckbox.checked = false;
     loadDashboardData();
 });
 showAllBookingsCheckbox.addEventListener('change', () => {
-    loadBookings();
+    loadDashboardData();
 });
 
 // --- DASHBOARD LOGIC ---
@@ -48,7 +112,7 @@ async function loadBookings() {
         const bookingsUrl = showAllBookingsCheckbox.checked
             ? `${API_URL}/admin/bookings?all=1`
             : `${API_URL}/admin/bookings?date=${date}`;
-        const response = await fetch(bookingsUrl);
+        const response = await apiFetch(bookingsUrl);
         const bookings = await response.json();
         
         tbody.innerHTML = '';
@@ -88,7 +152,7 @@ async function loadSlots() {
     const tbody = document.getElementById('slots-body');
     const date = adminDate.value || today;
     try {
-        const response = await fetch(`${API_URL}/slots?date=${date}`);
+        const response = await apiFetch(`${API_URL}/slots?date=${date}`);
         const slots = await response.json();
         
         tbody.innerHTML = '';
@@ -125,7 +189,7 @@ async function toggleSlot(time, wantToMakeAvailable) {
     try {
         // wantToMakeAvailable is 1 if it is currently unavailable and we want to unblock it. 
         // 0 if it is available and we want to block it.
-        await fetch(`${API_URL}/admin/slots/toggle`, {
+        await apiFetch(`${API_URL}/admin/slots/toggle`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ date, time, is_available: wantToMakeAvailable })
@@ -141,7 +205,7 @@ async function resetDay() {
     const date = adminDate.value || today;
     if (!confirm(`Are you sure you want to delete ALL bookings for ${date}? This action cannot be undone.`)) return;
     try {
-        await fetch(`${API_URL}/admin/reset`, {
+        await apiFetch(`${API_URL}/admin/reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ date })
@@ -194,7 +258,7 @@ function notifyForNewBookings(bookings) {
 
 async function loadBookingWindowSettings() {
     try {
-        const response = await fetch(`${API_URL}/admin/settings`);
+        const response = await apiFetch(`${API_URL}/admin/settings`);
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.error || 'Failed to load booking window settings.');
@@ -214,7 +278,7 @@ async function saveBookingWindowSettings() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/admin/settings`, {
+        const response = await apiFetch(`${API_URL}/admin/settings`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ advance_booking_days: parsedDays })
@@ -230,6 +294,12 @@ async function saveBookingWindowSettings() {
 }
 
 saveBookingWindowBtn.addEventListener('click', saveBookingWindowSettings);
+logoutBtn.addEventListener('click', async () => {
+    await fetch(`${API_URL}/admin/logout`, { method: 'POST' });
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    loginError.style.display = 'none';
+});
 
 setInterval(() => {
     const dashboardVisible = document.getElementById('dashboard').style.display === 'block';
@@ -238,4 +308,4 @@ setInterval(() => {
     }
 }, 15000);
 
-loadBookingWindowSettings();
+checkAdminSessionOnLoad();

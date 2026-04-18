@@ -15,10 +15,10 @@
     <div id="login-screen" class="login-container">
         <div class="login-box">
             <h2>Admin Login</h2>
-            <p>Enter the master PIN to access bookings.</p>
-            <input type="password" id="pin-input" placeholder="PIN" />
+            <p>Enter admin password to access bookings.</p>
+            <input type="password" id="pin-input" placeholder="Password" />
             <button onclick="checkPin()" class="btn btn-primary">Enter</button>
-            <p id="login-error" style="color:red; display:none; margin-top:10px;">Incorrect PIN</p>
+            <p id="login-error" style="color:red; display:none; margin-top:10px;">Incorrect password</p>
             <p style="font-size: 0.8rem; margin-top:15px; color:#666;"></p>
         </div>
     </div>
@@ -27,7 +27,10 @@
     <div id="dashboard" class="dashboard-container" style="display:none;">
         <header class="admin-header">
             <h1>Minggo Admin</h1>
-            <a href="/index.html" class="btn btn-outline" target="_blank">View Live Site</a>
+            <div style="display:flex; gap:10px;">
+                <a href="/index.html" class="btn btn-outline" target="_blank">View Live Site</a>
+                <button id="logout-btn" class="btn btn-danger">Logout</button>
+            </div>
         </header>
 
         <div class="admin-controls"
@@ -36,7 +39,7 @@
             <input type="date" id="admin-date"
                 style="padding: 10px; margin-left: 10px; border-radius: 5px; border: 1px solid #ccc;">
             <label for="show-all-bookings" style="margin-left: 12px;">
-                <input type="checkbox" id="show-all-bookings">
+                <input type="checkbox" id="show-all-bookings" checked>
                 Show all bookings
             </label>
             <button onclick="exportBookingsCsv()" class="btn btn-outline" style="float: right; margin-left: 10px;">Export CSV</button>
